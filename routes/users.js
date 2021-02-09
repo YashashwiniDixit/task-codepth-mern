@@ -44,14 +44,12 @@ router.post('/register',(req,res) => {
             password2
         });
     }
-    else
-    {
+    else{
         //validation passed
-        User.findOne({email: email})
-        .then(user => {
+        User.findOne({email: email}).then(user => {
             if(user) {
                 //user exists
-                errors.push({msg:'Email is already registered'})
+                errors.push({msg:'Email is already registered'});
                 res.render('register', {
                     errors,
                     name,
@@ -60,26 +58,29 @@ router.post('/register',(req,res) => {
                     password2
                 });
         }else {
-                const newUser = new User ({
-                    name,
-                    email,
-                    password
-                });
-                //hash password
-                bcrypt.genSalt(10,(err,salt)=> 
-                    bcrypt.hash(newUser.password,salt,(err,hash)=>{
-                        if(err) throw err;
-                        //set password to hashed
-                        newUser.password=hash;
-                        //save user
-                        newUser.save()
-                        .then (user =>{
-                            res.redirect('/users/login');
-                        })
-                        .catch(err => console.log(err));
-                    }))
-            }
+        const newUser = new User ({
+            name,
+            email,
+            password
         });
+        //hash password
+        bcrypt.genSalt(10,(err,salt)=> {
+            bcrypt.hash(newUser.password,salt,(err,hash)=>{
+                if(err) throw err;
+                //set password to hashed
+                newUser.password=hash;
+                //save user
+                newUser
+                .save()
+                .then (user =>{
+                    req.flash('success_msg', 'You are now registered and can login in');
+                    res.redirect('/users/login');
+                })
+                .catch(err => console.log(err));
+            });
+        });
+    }
+    });
 
     }
 
