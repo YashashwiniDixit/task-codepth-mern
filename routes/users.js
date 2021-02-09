@@ -25,7 +25,7 @@ router.post('/register',(req,res) => {
     //check passwords match
     if(password !== password2)
     {
-        errors.push({mag: 'Passwords do not match'});
+        errors.push({msg: 'Passwords do not match'});
     }
 
     //check password length
@@ -59,15 +59,25 @@ router.post('/register',(req,res) => {
                     password,
                     password2
                 });
-            }
-            else{
+        }else {
                 const newUser = new User ({
                     name,
                     email,
                     password
                 });
-                console.log(newUser);
-                res.send('hello');
+                //hash password
+                bcrypt.genSalt(10,(err,salt)=> 
+                    bcrypt.hash(newUser.password,salt,(err,hash)=>{
+                        if(err) throw err;
+                        //set password to hashed
+                        newUser.password=hash;
+                        //save user
+                        newUser.save()
+                        .then (user =>{
+                            res.redirect('/users/login');
+                        })
+                        .catch(err => console.log(err));
+                    }))
             }
         });
 
